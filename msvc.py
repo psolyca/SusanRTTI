@@ -1,4 +1,4 @@
-from idaapi import get_struc_id, BADADDR, del_struc, get_struc, add_struc, add_struc_member, FF_DATA, FF_DWRD, FF_0OFF, get_struc_size, FF_ASCI, do_unknown_range, DOUNK_DELNAMES, doStruct, get_member_by_name, get_32bit, get_ascii_contents, demangle_name, doDwrd, op_offset
+from idaapi import get_struc_id, BADADDR, del_struc, get_struc, add_struc, add_struc_member, FF_DATA, FF_DWRD, FF_0OFF, get_struc_size, FF_ASCI, do_unknown_range, DOUNK_DELNAMES, doStruct, get_member_by_name, get_32bit, get_ascii_contents, demangle_name, doDwrd, op_offset, STRTYPE_C, FF_STRU, del_extra_cmt, set_cmt
 from idc import *
 
 from utils import utils
@@ -24,15 +24,15 @@ class RTTICompleteObjectLocator(RTTIStruc):
     # Init class statics
     msid = get_struc_id("RTTICompleteObjectLocator")
     if msid != BADADDR:
-        del_struc(get_struc(msid))
+        del_struc(msid)
     msid = add_struc(0xFFFFFFFF, "RTTICompleteObjectLocator", False)
-    add_struc_member(get_struc(msid), "signature", BADADDR, FF_DATA|FF_DWRD, None, 4)
-    add_struc_member(get_struc(msid), "offset", BADADDR, FF_DATA|FF_DWRD, None, 4)
-    add_struc_member(get_struc(msid), "cdOffset", BADADDR, FF_DATA|FF_DWRD, None, 4)
-    add_struc_member(get_struc(msid), "pTypeDescriptor", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, u.mt_rva(), 4)
-    add_struc_member(get_struc(msid), "pClassDescriptor", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, u.mt_rva(), 4)
+    add_struc_member(msid, "signature", BADADDR, FF_DATA|FF_DWRD, -1, 4)
+    add_struc_member(msid, "offset", BADADDR, FF_DATA|FF_DWRD, -1, 4)
+    add_struc_member(msid, "cdOffset", BADADDR, FF_DATA|FF_DWRD, -1, 4)
+    add_struc_member(msid, "pTypeDescriptor", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, 00000000, 4)
+    add_struc_member(msid, "pClassDescriptor", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, 00000000, 4)
     if u.x64:
-        add_struc_member(get_struc(msid), "pSelf", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, u.mt_rva(), 4)
+        add_struc_member(msid, "pSelf", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, 00000000, 4)
     tid = msid
     struc = get_struc(tid)
     size = get_struc_size(tid)
@@ -66,18 +66,18 @@ class RTTITypeDescriptor(RTTIStruc):
 
     msid = get_struc_id("RTTITypeDescriptor")
     if msid != BADADDR:
-        del_struc(get_struc(msid))
+        del_struc(msid)
     msid = add_struc(0xFFFFFFFF, "RTTITypeDescriptor", False)
-    add_struc_member(get_struc(msid), "pVFTable", BADADDR, FF_DATA|u.PTR_TYPE|FF_0OFF, u.mt_address(), u.PTR_SIZE)
-    add_struc_member(get_struc(msid), "spare", BADADDR, FF_DATA|u.PTR_TYPE, None, u.PTR_SIZE)
-    add_struc_member(get_struc(msid), "name", BADADDR, FF_DATA|FF_ASCI, u.mt_ascii(), 0)
+    add_struc_member(msid, "pVFTable", BADADDR, FF_DATA|u.PTR_TYPE|FF_0OFF, -1, u.PTR_SIZE)
+    add_struc_member(msid, "spare", BADADDR, FF_DATA|u.PTR_TYPE|FF_0OFF, -1, u.PTR_SIZE)
+    add_struc_member(msid, "name", BADADDR, FF_DATA|FF_ASCI, STRTYPE_C, 0)
     tid = msid
     struc = get_struc(tid)
     size = get_struc_size(tid)
     print "Completed Registering RTTITypeDescriptor"
 
     def __init__(self, ea):
-        name = ea + get_member_by_name(get_struc(self.tid), "name").soff
+        name = ea + get_member_by_name(self.struc, "name").soff
         strlen = u.get_strlen(name)
         if strlen is None:
             # not a real vtable
@@ -103,12 +103,12 @@ class RTTIClassHierarchyDescriptor(RTTIStruc):
 
     msid = get_struc_id("RTTIClassHierarchyDescriptor")
     if msid != BADADDR:
-        del_struc(get_struc(msid))
+        del_struc(msid)
     msid = add_struc(0xFFFFFFFF, "RTTIClassHierarchyDescriptor", False)
-    add_struc_member(get_struc(msid), "signature", BADADDR, FF_DWRD|FF_DATA, None, 4)
-    add_struc_member(get_struc(msid), "attribute", BADADDR, FF_DWRD|FF_DATA, None, 4)
-    add_struc_member(get_struc(msid), "numBaseClasses", BADADDR, FF_DWRD|FF_DATA, None, 4)
-    add_struc_member(get_struc(msid), "pBaseClassArray", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, u.mt_rva(), 4)
+    add_struc_member(msid, "signature", BADADDR, FF_DWRD|FF_DATA, -1, 4)
+    add_struc_member(msid, "attribute", BADADDR, FF_DWRD|FF_DATA, -1, 4)
+    add_struc_member(msid, "numBaseClasses", BADADDR, FF_DWRD|FF_DATA, -1, 4)
+    add_struc_member(msid, "pBaseClassArray", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, 00000000, 4)
     tid = msid
     struc = get_struc(tid)
     print "Completed Registering RTTIClassHierarchyDescriptor"
@@ -117,8 +117,8 @@ class RTTIClassHierarchyDescriptor(RTTIStruc):
         print "Processing Class Hierarchy Descriptor at 0x%x" % ea
         do_unknown_range(ea, get_struc_size(self.tid), DOUNK_DELNAMES)
         if doStruct(ea, get_struc_size(self.tid), self.tid):
-            baseClasses = get_32bit(ea+get_member_by_name(get_struc(self.tid), "pBaseClassArray").soff) + u.x64_imagebase()
-            nb_classes = get_32bit(ea+get_member_by_name(get_struc(self.tid), "numBaseClasses").soff)
+            baseClasses = get_32bit(ea+get_member_by_name(self.struc, "pBaseClassArray").soff) + u.x64_imagebase()
+            nb_classes = get_32bit(ea+get_member_by_name(self.struc, "numBaseClasses").soff)
             print "Baseclasses array at 0x%x" % baseClasses
             # Skip the first base class as it is itself (could check)
             self.bases = []
@@ -134,12 +134,12 @@ class RTTIClassHierarchyDescriptor(RTTIStruc):
 class RTTIBaseClassDescriptor(RTTIStruc):
     msid = get_struc_id("RTTIBaseClassDescriptor")
     if msid != BADADDR:
-        del_struc(get_struc(msid))
+        del_struc(msid)
     msid = add_struc(0xFFFFFFFF, "RTTIBaseClassDescriptor", False)
-    add_struc_member(get_struc(msid), "pTypeDescriptor", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, u.mt_rva(), 4)
-    add_struc_member(get_struc(msid), "numContainerBases", BADADDR, FF_DWRD|FF_DATA, None, 4)
-    add_struc_member(get_struc(msid), "PMD", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, u.mt_rva(), 4)
-    add_struc_member(get_struc(msid), "attributes", BADADDR, FF_DWRD|FF_DATA, None, 4)
+    add_struc_member(msid, "pTypeDescriptor", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, 00000000, 4)
+    add_struc_member(msid, "numContainerBases", BADADDR, FF_DWRD|FF_DATA, -1, 4)
+    add_struc_member(msid, "PMD", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, 00000000, 4)
+    add_struc_member(msid, "attributes", BADADDR, FF_DWRD|FF_DATA, -1, 4)
     tid = msid
     struc = get_struc(tid)
     size = get_struc_size(tid)
