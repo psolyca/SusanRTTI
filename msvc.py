@@ -132,13 +132,25 @@ class RTTIClassHierarchyDescriptor(RTTIStruc):
                 self.bases.append(RTTITypeDescriptor(typeDescriptor).class_name)
 
 class RTTIBaseClassDescriptor(RTTIStruc):
+   
+    msid = get_struc_id("PMD")
+    if msid != BADADDR:
+        del_struc(msid)
+    msid = add_struc(0xFFFFFFFF, "PMD", False)
+    add_struc_member(msid, "mdisp", BADADDR, FF_DATA|FF_DWRD, -1, 4)
+    add_struc_member(msid, "pdisp", BADADDR, FF_DATA|FF_DWRD, -1, 4)
+    add_struc_member(msid, "vdisp", BADADDR, FF_DATA|FF_DWRD, -1, 4)
+    pmdid = msid
+    pmdstruc = get_struc(pmdid)
+    pmdsize = get_struc_size(pmdid)
+    
     msid = get_struc_id("RTTIBaseClassDescriptor")
     if msid != BADADDR:
         del_struc(msid)
     msid = add_struc(0xFFFFFFFF, "RTTIBaseClassDescriptor", False)
     add_struc_member(msid, "pTypeDescriptor", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, 00000000, 4)
     add_struc_member(msid, "numContainerBases", BADADDR, FF_DWRD|FF_DATA, -1, 4)
-    add_struc_member(msid, "PMD", BADADDR, FF_DATA|FF_DWRD|FF_0OFF, 00000000, 4)
+    add_struc_member(msid, "PMD", BADADDR, FF_DATA|FF_DWRD|FF_STRU, pmdid, pmdsize)
     add_struc_member(msid, "attributes", BADADDR, FF_DWRD|FF_DATA, -1, 4)
     tid = msid
     struc = get_struc(tid)
