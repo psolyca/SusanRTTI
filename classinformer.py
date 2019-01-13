@@ -18,7 +18,7 @@ def show_classes(classes):
     c.Show()
 
 def isGcc():
-    gcc_info = FindText(0x0, SEARCH_CASE|SEARCH_DOWN, 0, 0, "N10__cxxabiv117__class_type_infoE")
+    gcc_info = find_binary(0x0, SEARCH_CASE|SEARCH_DOWN, "4e 31 30 5f 5f 63 78 78 61 62 69 76 31 31 37 5f 5f 63 6c 61 73 73 5f 74 79 70 65 5f 69 6e 66 6f 45")
     return gcc_info != BADADDR
 
 def main():
